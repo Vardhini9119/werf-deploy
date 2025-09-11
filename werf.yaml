@@ -1,0 +1,6 @@
+project: simple-webapp-flask
+configVersion: 1
+---
+image: webapp
+context: ./simple-webapp-flask
+dockerfile: Dockerfile
