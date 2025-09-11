@@ -2,14 +2,15 @@
 apiVersion: azure.upbound.io/v1beta1
 kind: ProviderConfig
 metadata:
-  name: {{ lower .Values.crossplane_providerconfig.azure.clientId | quote }}-azure-creds
+  name: {{ .Values.crossplane_providerconfig.azure.clientId | toString | lower }}-azure-creds
   namespace: {{ .Release.Namespace }}
 spec:
   credentials:
     source: Secret
     secretRef:
       namespace: {{ .Release.Namespace }}
-      name: {{ lower .Values.crossplane_providerconfig.azure.clientId | quote }}-azure-secret
+      name: {{ .Values.crossplane_providerconfig.azure.clientId | toString | lower }}-azure-secret
       key: creds
 
 {{- end }}
+
