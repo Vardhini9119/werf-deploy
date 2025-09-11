@@ -12,7 +12,7 @@ crossplane_providerconfig:
     aws_access_key_id: 
   azure:
     enabled: true
-    clientId: 
+    clientId: dd01ab3a-39d3-42f3-ab97-09fc1e26ee22
   
 
 cloud:
@@ -328,4 +328,5 @@ cloud:
         
 
      
+
 
