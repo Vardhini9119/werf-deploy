@@ -41,7 +41,7 @@ jobs:
         run: |
           werf converge \
            --repo applicationwerf.azurecr.io/webapp \
-           --namespace croosplane-system
+           --namespace crossplane-system
            --set crossplane_providerconfig.azure.clientId=${{ secrets.AZURE_CLIENT_ID }} \
            --set crossplane_providerconfig.azure.clientSecret=${{ secrets.AZURE_CLIENT_SECRET }} \
            --set crossplane_providerconfig.azure.tenantId=${{ secrets.AZURE_TENANT_ID }} \
