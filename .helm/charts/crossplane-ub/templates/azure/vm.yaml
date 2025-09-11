@@ -1,0 +1,36 @@
+{{- if and .Values.crossplane_providerconfig.azure.enabled .Values.cloud.azure.services.vm.enabled -}}
+apiVersion: compute.azure.upbound.io/v1beta1
+kind: LinuxVirtualMachine
+metadata:
+  name: {{ .Values.global.app.name }}-vm
+  namespace: {{ .Release.Namespace }}
+  labels:
+    appName: {{ .Values.global.app.name }}
+spec:
+  forProvider:
+    adminUsername: azureuser
+    disablePasswordAuthentication: false
+    adminPasswordSecretRef:
+      key: {{ .Values.cloud.azure.services.vm.password_secret_key }}
+      name: {{ .Values.cloud.azure.services.vm.password_secret_name }}
+      namespace: {{ .Values.cloud.azure.services.vm.password_secret_namespace }}
+    disablePasswordAuthentication: false
+    adminUsername: azureuser
+    location: {{ .Values.cloud.azure.region }}
+    networkInterfaceIdsRefs:                           
+      - name: {{ .Values.global.app.name }}-network-interface
+    osDisk:                                             
+      - caching: ReadWrite
+        storageAccountType: Standard_LRS
+    resourceGroupName: {{ .Values.global.app.name }}-rg
+    size: {{ .Values.cloud.azure.services.vm.size }}
+    sourceImageReference:
+      - offer: UbuntuServer
+        publisher: Canonical
+        sku: 18.04-LTS
+        version: latest
+    tags:
+      Name: {{ .Values.global.app.name }}-vm
+  providerConfigRef:
+    name: {{ lower .Values.crossplane_providerconfig.azure.clientId }}-azure-creds
+{{- end -}}

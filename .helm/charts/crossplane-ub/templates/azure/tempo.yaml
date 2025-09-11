@@ -1,0 +1,19 @@
+{{- if and .Values.crossplane_providerconfig.azure.enabled .Values.cloud.azure.services.apps.tempo.enabled -}}
+apiVersion: helm.crossplane.io/v1beta1
+kind: Release
+metadata:
+  name: {{ .Values.global.app.name }}-aks-tempo
+  namespace: {{ .Release.Namespace }}
+  labels:
+    appName: {{ .Values.global.app.name }}
+spec:
+  forProvider:
+    chart:
+      name: tempo
+      repository: "https://grafana.github.io/helm-charts"
+      version: {{ .Values.cloud.azure.services.apps.tempo.version }}
+    namespace: monitoring
+    values: {}
+  providerConfigRef:
+    name: {{ .Values.global.app.name }}-helm-aks
+{{- end }}

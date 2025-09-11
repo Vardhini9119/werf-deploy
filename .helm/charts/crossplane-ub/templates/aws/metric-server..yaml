@@ -1,0 +1,18 @@
+{{- if and .Values.crossplane_providerconfig.aws.enabled .Values.cloud.aws.services.apps.metric_server.enabled -}}
+apiVersion: helm.crossplane.io/v1beta1
+kind: Release
+metadata:
+  name: {{ .Values.global.app.name }}-eks-metric-server
+  namespace: {{ .Release.Namespace }}
+  labels:
+    appName: {{ .Values.global.app.name }}
+spec:
+  forProvider:
+    chart:
+      name: metrics-server
+      repository: https://kubernetes-sigs.github.io/metrics-server
+      version: {{ .Values.cloud.aws.services.apps.metric_server.version }}
+    namespace: default
+  providerConfigRef:
+    name: {{ .Values.global.app.name }}-eks-helm
+{{- end }}

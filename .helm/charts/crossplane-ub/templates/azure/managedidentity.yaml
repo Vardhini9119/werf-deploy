@@ -1,0 +1,14 @@
+{{- if and .Values.crossplane_providerconfig.azure.enabled .Values.cloud.azure.services.managedIdentity.enabled -}}
+apiVersion: managedidentity.azure.upbound.io/v1beta1
+kind: UserAssignedIdentity
+metadata:
+  name: {{ .Values.global.app.name }}-uami
+  namespace: {{ .Release.Namespace }}
+spec:
+  forProvider:
+    name: {{ .Values.global.app.name }}-uami
+    location: {{ .Values.cloud.azure.region }}
+    resourceGroupName: {{ .Values.global.app.name }}-rg
+  providerConfigRef:
+    name: {{ lower .Values.crossplane_providerconfig.azure.clientId }}-azure-creds
+{{- end }}

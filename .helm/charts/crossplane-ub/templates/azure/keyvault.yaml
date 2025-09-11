@@ -1,0 +1,16 @@
+{{- if and .Values.crossplane_providerconfig.azure.enabled .Values.cloud.azure.services.keyvault.enabled -}}
+apiVersion: keyvault.azure.upbound.io/v1beta1
+kind: Vault
+metadata:
+  name: {{ .Values.global.app.name }}-keyvault
+  namespace: {{ .Release.Namespace }}
+spec:
+  forProvider:
+    location: {{ .Values.cloud.azure.region }}
+    resourceGroupName: {{ .Values.global.app.name }}-rg
+    skuName: standard
+    skuFamily: A
+    tenantId: {{ .Values.cloud.azure.tenantId }}
+  providerConfigRef:
+    name: {{ lower .Values.crossplane_providerconfig.azure.clientId }}-azure-creds
+{{- end }}

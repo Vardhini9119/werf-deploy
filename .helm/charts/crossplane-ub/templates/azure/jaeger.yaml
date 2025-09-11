@@ -1,0 +1,19 @@
+{{- if and .Values.crossplane_providerconfig.azure.enabled .Values.cloud.azure.services.apps.jaeger.enabled -}}
+apiVersion: helm.crossplane.io/v1beta1
+kind: Release
+metadata:
+  name: {{ .Values.global.app.name }}-aks-jaeger
+  namespace: {{ .Release.Namespace }}
+  labels:
+    appName: {{ .Values.global.app.name }}
+spec:
+  forProvider:
+    chart:
+      name: jaeger
+      repository: "oci://registry-1.docker.io/bitnamicharts"
+      version: {{.Values.cloud.azure.services.apps.jaeger.version}}
+    namespace: monitoring
+    values: {}
+  providerConfigRef:
+    name: {{ .Values.global.app.name }}-helm-aks
+{{- end }}

@@ -1,0 +1,17 @@
+{{- if and .Values.crossplane_providerconfig.aws.enabled .Values.cloud.aws.services.subnet_group.enabled -}}
+apiVersion: rds.aws.upbound.io/v1beta1
+kind: SubnetGroup
+metadata:
+  name: {{ .Values.global.app.name }}-aws-db-subnetgroup
+  namespace: {{ .Release.Namespace }}
+spec:
+  forProvider:
+    region: {{ .Values.cloud.aws.region }}
+    subnetIdRefs:
+      - name: {{ .Values.global.app.name }}-public-subnet1
+      - name: {{ .Values.global.app.name }}-public-subnet2
+    tags: 
+      Name: {{ .Values.global.app.name }}-aws-db-subnetgroup
+  providerConfigRef:
+    name: {{ lower .Values.crossplane_providerconfig.aws.aws_access_key_id }}-aws-creds
+{{- end }}

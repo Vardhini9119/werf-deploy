@@ -1,0 +1,17 @@
+{{- if and .Values.crossplane_providerconfig.azure.enabled .Values.cloud.azure.services.apps.vpa.enabled -}}
+apiVersion: helm.crossplane.io/v1beta1
+kind: Release
+metadata:
+  name: {{ .Values.global.app.name }}-aks-vpa
+  namespace: {{ .Release.Namespace }}
+  labels:
+    appName: {{ .Values.global.app.name }}
+spec:
+  forProvider:
+    chart:
+      name: vertical-pod-autoscaler
+      repository: https://cowboysysop.github.io/charts/
+    namespace: vpa
+  providerConfigRef:
+    name: {{ .Values.global.app.name }}-helm-aks
+{{- end }}

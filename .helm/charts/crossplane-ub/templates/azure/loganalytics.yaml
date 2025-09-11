@@ -1,0 +1,17 @@
+{{- if and .Values.crossplane_providerconfig.azure.enabled .Values.cloud.azure.services.log_analytics.enabled -}}
+apiVersion: operationalinsights.azure.upbound.io/v1beta1
+kind: Workspace
+metadata:
+  name: {{ .Values.global.app.name }}-log-analytics
+spec:
+  forProvider:
+    location: {{ .Values.cloud.azure.region }}
+    resourceGroupName: {{ .Values.global.app.name }}-rg
+    sku: PerGB2018
+    retentionInDays: {{ .Values.cloud.azure.services.log_analytics.retention_days }}
+  writeConnectionSecretToRef: 
+    namespace: {{ .Release.Namespace }}
+    name: {{ .Values.global.app.name }}-log-analytics-conf
+  providerConfigRef:
+    name: {{ lower $.Values.crossplane_providerconfig.azure.clientId }}-azure-creds
+{{- end }}

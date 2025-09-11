@@ -1,0 +1,43 @@
+{{- if and .Values.crossplane_providerconfig.azure.enabled .Values.cloud.azure.services.vm.enabled -}}
+apiVersion: network.azure.upbound.io/v1beta1
+kind: SecurityGroup
+metadata:
+  name: {{ .Values.global.app.name }}-nsg
+  namespace: {{ .Release.Namespace }}
+  labels:
+    appName: {{ .Values.global.app.name }}
+spec:
+  forProvider:
+    location: {{ .Values.cloud.azure.region }}
+    resourceGroupName: {{ .Values.global.app.name }}-rg
+    securityRule:
+      - name: allow-ssh
+        priority: 100
+        direction: Inbound
+        access: Allow
+        protocol: Tcp
+        sourcePortRange: "*"
+        destinationPortRange: "22"
+        sourceAddressPrefix: "*"
+        destinationAddressPrefix: "*"
+      - name: allow-http
+        priority: 110
+        direction: Inbound
+        access: Allow
+        protocol: Tcp
+        sourcePortRange: "*"
+        destinationPortRange: "80"
+        sourceAddressPrefix: "*"
+        destinationAddressPrefix: "*"
+      - name: allow-https
+        priority: 120
+        direction: Inbound
+        access: Allow
+        protocol: Tcp
+        sourcePortRange: "*"
+        destinationPortRange: "443"
+        sourceAddressPrefix: "*"
+        destinationAddressPrefix: "*"
+  providerConfigRef:
+    name: {{ lower .Values.crossplane_providerconfig.azure.clientId }}-azure-creds
+{{- end -}} 

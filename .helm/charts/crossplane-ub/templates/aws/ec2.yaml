@@ -1,0 +1,114 @@
+{{- if and .Values.crossplane_providerconfig.aws.enabled .Values.cloud.aws.services.ec2.enabled -}}
+
+# Security Group
+apiVersion: ec2.aws.upbound.io/v1beta1
+kind: SecurityGroup
+metadata:
+  name: {{ .Values.global.app.name }}-sg
+  labels:
+    app: {{ .Values.global.app.name }}-sg
+spec:
+  forProvider:
+    region: {{ .Values.cloud.aws.region }}
+    vpcIdRef:
+      name: {{ .Values.global.app.name }}-vpc
+    description: Security group for {{ .Values.global.app.name }} EC2 instance
+    tags:
+      Name: {{ .Values.global.app.name }}-sg
+  providerConfigRef:
+    name: {{ lower .Values.crossplane_providerconfig.aws.aws_access_key_id }}-aws-creds
+
+---
+
+# Security Group Ingress Rules
+{{- range $index, $rule := .Values.cloud.aws.services.ec2.securityGroup.ingress }}
+apiVersion: ec2.aws.upbound.io/v1beta1
+kind: SecurityGroupRule
+metadata:
+  name: {{ $.Values.global.app.name }}-sg-ingress-{{ $index }}
+spec:
+  forProvider:
+    region: {{ $.Values.cloud.aws.region }}
+    type: ingress
+    securityGroupIdSelector:
+      matchLabels:
+        app: {{ $.Values.global.app.name }}-sg
+    fromPort: {{ $rule.fromPort }}
+    toPort: {{ $rule.toPort }}
+    protocol: {{ $rule.protocol | quote }}
+    cidrBlocks:
+      {{- toYaml $rule.cidrBlocks | nindent 6 }}
+    description: {{ $rule.description }}
+  providerConfigRef:
+    name: {{ lower $.Values.crossplane_providerconfig.aws.aws_access_key_id }}-aws-creds
+---
+{{- end }}
+
+# Security Group Egress Rules
+{{- range $index, $rule := .Values.cloud.aws.services.ec2.securityGroup.egress }}
+apiVersion: ec2.aws.upbound.io/v1beta1
+kind: SecurityGroupRule
+metadata:
+  name: {{ $.Values.global.app.name }}-sg-egress-{{ $index }}
+spec:
+  forProvider:
+    region: {{ $.Values.cloud.aws.region }}
+    type: egress
+    securityGroupIdSelector:
+      matchLabels:
+        app: {{ $.Values.global.app.name }}-sg
+    fromPort: {{ $rule.fromPort }}
+    toPort: {{ $rule.toPort }}
+    protocol: {{ $rule.protocol | quote }}
+    cidrBlocks:
+      {{- toYaml $rule.cidrBlocks | nindent 6 }}
+    description: {{ $rule.description }}
+  providerConfigRef:
+    name: {{ lower $.Values.crossplane_providerconfig.aws.aws_access_key_id }}-aws-creds
+---
+{{- end }}
+
+# EC2 Instance
+apiVersion: ec2.aws.upbound.io/v1beta1
+kind: Instance
+metadata:
+  name: {{ .Values.global.app.name }}-ec2-instance
+  labels:
+    app: {{ .Values.global.app.name }}
+spec:
+  forProvider:
+    region: {{ .Values.cloud.aws.region }}
+    ami: {{ .Values.cloud.aws.services.ec2.ami }}
+    instanceType: {{ .Values.cloud.aws.services.ec2.instanceType }}
+    keyName: {{ .Values.cloud.aws.services.ec2.keyName }}
+    subnetIdRef:
+      name: {{ .Values.global.app.name }}-public-subnet1
+    vpcSecurityGroupIdSelector:
+      matchLabels:
+        app: {{ .Values.global.app.name }}-sg
+    associatePublicIpAddress: true
+    tags:
+      Name: {{ .Values.global.app.name }}-ec2-instance
+  providerConfigRef:
+    name: {{ lower .Values.crossplane_providerconfig.aws.aws_access_key_id }}-aws-creds
+
+---
+
+# Elastic IP for EC2 Instance
+apiVersion: ec2.aws.upbound.io/v1beta1
+kind: EIP
+metadata:
+  name: {{ .Values.global.app.name }}-ec2-eip
+  labels:
+    app: {{ .Values.global.app.name }}
+spec:
+  forProvider:
+    region: {{ .Values.cloud.aws.region }}
+    instanceRef:
+      name: {{ .Values.global.app.name }}-ec2-instance
+    domain: vpc
+    vpc: true
+  providerConfigRef:
+    name: {{ lower .Values.crossplane_providerconfig.aws.aws_access_key_id }}-aws-creds
+
+{{- end }}

@@ -1,0 +1,31 @@
+{{- if and .Values.crossplane_providerconfig.azure.enabled .Values.cloud.azure.services.storage.enabled }}
+---
+# Storage Account
+apiVersion: storage.azure.upbound.io/v1beta1
+kind: Account
+metadata:
+  name: {{ .Values.global.app.name }}{{ .Values.cloud.azure.services.storage.Account.name }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  forProvider:
+    location: {{ .Values.cloud.azure.region }}
+    resourceGroupName: {{ .Values.global.app.name }}-rg
+    accountTier: Standard
+    accountReplicationType: LRS
+  providerConfigRef:
+    name: {{ lower $.Values.crossplane_providerconfig.azure.clientId }}-azure-creds
+
+---
+# Blob Container
+apiVersion: storage.azure.upbound.io/v1beta1
+kind: Container
+metadata:
+  name: {{ .Values.global.app.name }}{{ .Values.cloud.azure.services.storage.container.name }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  forProvider:
+    storageAccountName: {{ .Values.global.app.name }}{{ .Values.cloud.azure.services.storage.Account.name }}
+    containerAccessType: {{ .Values.cloud.azure.services.storage.container.containerAccessType }}
+  providerConfigRef:
+    name: {{ lower $.Values.crossplane_providerconfig.azure.clientId }}-azure-creds
+{{- end }} 

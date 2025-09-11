@@ -1,0 +1,22 @@
+{{- if and .Values.crossplane_providerconfig.azure.enabled .Values.cloud.azure.services.apps.cert_manager.enabled -}}
+apiVersion: helm.crossplane.io/v1beta1
+kind: Release
+metadata:
+  name: {{ .Values.global.app.name }}-aks-cert-mgr
+  namespace: {{ .Release.Namespace }}
+  labels:
+    appName: {{ .Values.global.app.name }}
+spec:
+  forProvider:
+    chart:
+      name: cert-manager
+      repository: https://charts.jetstack.io
+      version: {{ .Values.cloud.azure.services.apps.cert_manager.version }}
+    namespace: cert-manager
+    values:
+      prometheus:
+        enabled: false
+      installCRDs: true
+  providerConfigRef:
+    name: {{ .Values.global.app.name }}-helm-aks
+{{- end }}

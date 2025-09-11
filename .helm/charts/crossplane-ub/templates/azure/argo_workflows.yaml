@@ -1,0 +1,26 @@
+{{- if and .Values.crossplane_providerconfig.azure.enabled .Values.cloud.azure.services.apps.argo_workflows.enabled -}}
+apiVersion: helm.crossplane.io/v1beta1
+kind: Release
+metadata:
+  name: {{ .Values.global.app.name }}-aks-argoworkflow
+  namespace: {{ .Release.Namespace }}
+  labels:
+    appName: {{ .Values.global.app.name }}
+spec:
+  forProvider:
+    chart:
+      name: argo-workflows 
+      repository: https://argoproj.github.io/argo-helm
+      version: {{ .Values.cloud.azure.services.apps.argo_workflows.version }}
+    namespace: argo-workflows
+    values:
+      controller:
+        parallelism: {{ .Values.cloud.azure.services.apps.argo_workflows.parallelism }}
+      workflow:
+        serviceAccount:
+          create: true
+      ingress:
+        enabled: true
+  providerConfigRef:
+    name: {{ .Values.global.app.name }}-helm-aks
+{{- end }}

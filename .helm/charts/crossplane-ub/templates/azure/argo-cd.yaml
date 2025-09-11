@@ -1,0 +1,30 @@
+{{- if and .Values.crossplane_providerconfig.azure.enabled .Values.cloud.azure.services.apps.argo_cd.enabled -}}
+apiVersion: helm.crossplane.io/v1beta1
+kind: Release
+metadata:
+  name: {{ .Values.global.app.name }}-aks-argocd
+  namespace: {{ .Release.Namespace }}
+  labels:
+    appName: {{ .Values.global.app.name }}
+spec:
+  forProvider:
+    chart:
+      name: argo-cd
+      repository: https://argoproj.github.io/argo-helm
+      version: {{ .Values.cloud.azure.services.apps.argo_cd.version }}
+    namespace: argo-cd
+    values:
+      ingress:
+        enabled: true
+      dex:
+        enabled: false
+      notifications:
+        enabled: false
+      applicationSet:
+        enabled: false
+      server:
+        extraArgs:
+          - --insecure
+  providerConfigRef:
+    name: {{ .Values.global.app.name }}-helm-aks
+{{- end }}

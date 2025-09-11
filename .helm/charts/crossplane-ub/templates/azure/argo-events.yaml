@@ -1,0 +1,21 @@
+{{- if and .Values.crossplane_providerconfig.azure.enabled .Values.cloud.azure.services.apps.argo_events.enabled -}}
+apiVersion: helm.crossplane.io/v1beta1
+kind: Release
+metadata:
+  name: {{ .Values.global.app.name }}-aks-argoevts
+  namespace: {{ .Release.Namespace }}
+  labels:
+    appName: {{ .Values.global.app.name }}
+spec:
+  forProvider:
+    chart:
+      name: argo-events
+      repository: https://argoproj.github.io/argo-helm
+      version: {{ .Values.cloud.azure.services.apps.argo_events.version }}
+    namespace: argo-events
+    values:
+      ingress:
+        enabled: true
+  providerConfigRef:
+    name: {{ .Values.global.app.name }}-helm-aks
+{{- end }}

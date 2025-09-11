@@ -1,0 +1,30 @@
+{{- if and .Values.crossplane_providerconfig.aws.enabled .Values.cloud.aws.services.apps.ext_dns.enabled -}}
+apiVersion: helm.crossplane.io/v1beta1
+kind: Release
+metadata:
+  name: {{ .Values.global.app.name }}-eks-extdns
+  namespace: {{ .Release.Namespace }}
+  labels:
+    appName: {{ .Values.global.app.name }}
+spec:
+  forProvider:
+    chart:
+      name: external-dns
+      repository: "oci://registry-1.docker.io/bitnamicharts"
+      version: {{ .Values.cloud.aws.services.apps.ext_dns.version }}
+    namespace: default
+    values:
+      config:
+        sources:
+          - type : service
+          - type : ingress
+        provider: {{ .Values.cloud.aws.services.apps.ext_dns.config.provider }}
+        domain_filter: {{ .Values.cloud.aws.services.apps.ext_dns.config.domain_filter }}
+        txt_prefix: {{ .Values.cloud.aws.services.apps.ext_dns.config.txt_prefix }}
+        auth:
+          godaddy:
+            api_key: {{ .Values.cloud.aws.services.apps.ext_dns.config.auth.godaddy.api_key }}
+            api_secret: {{ .Values.cloud.aws.services.apps.ext_dns.config.auth.godaddy.api_secret  }}
+  providerConfigRef:
+    name: {{ .Values.global.app.name }}-eks-helm
+{{- end }}

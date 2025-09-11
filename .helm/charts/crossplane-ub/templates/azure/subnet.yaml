@@ -1,0 +1,19 @@
+{{- if and .Values.crossplane_providerconfig.azure.enabled -}}
+apiVersion: network.azure.upbound.io/v1beta1
+kind: Subnet
+metadata:
+  name: {{ .Values.global.app.name }}-subnet
+  namespace: {{ .Release.Namespace }}
+  labels:
+    appName: {{ .Values.global.app.name }}
+spec:
+  forProvider:
+    addressPrefixes:
+      {{- range .Values.cloud.azure.services.vnet.subnet.addressPrefixes }}
+      - {{ . | quote }}
+      {{- end }}
+    virtualNetworkName: {{ .Values.global.app.name }}-vnet
+    resourceGroupName: {{ .Values.global.app.name }}-rg
+  providerConfigRef:
+    name: {{ lower $.Values.crossplane_providerconfig.azure.clientId }}-azure-creds
+{{- end }}

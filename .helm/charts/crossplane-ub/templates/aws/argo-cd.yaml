@@ -1,0 +1,35 @@
+{{- if and .Values.crossplane_providerconfig.aws.enabled .Values.cloud.aws.services.apps.argo_cd.enabled -}}
+apiVersion: helm.crossplane.io/v1beta1
+kind: Release
+metadata:
+  name: {{ .Values.global.app.name }}-eks-argocd
+  namespace: {{ .Release.Namespace }}
+  labels:
+    appName: {{ .Values.global.app.name }}
+spec:
+  forProvider:
+    chart:
+      name: argo-cd
+      repository: https://argoproj.github.io/argo-helm
+      version: {{ .Values.cloud.aws.services.apps.argo_cd.version }}
+    namespace: argo-cd
+    values:
+      server:
+        ingress:
+          enabled: true
+          annotations:
+            nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+            nginx.ingress.kubernetes.io/ssl-passthrough: true
+            nginx.org/mergeable-ingress-type: "minion"
+          ingressClassName: "nginx"
+          hostname: {{ .Values.cloud.aws.services.apps.argo_cd.hostname }}
+          path: /{{ .Values.cloud.aws.services.apps.argo_cd.path }}
+      dex:
+        enabled: false
+      notifications:
+        enabled: true
+      applicationSet:
+        enabled: true
+  providerConfigRef:
+    name: {{ .Values.global.app.name }}-eks-helm
+{{- end }}

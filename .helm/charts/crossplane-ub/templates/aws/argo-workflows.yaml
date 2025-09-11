@@ -1,0 +1,49 @@
+{{- if and .Values.crossplane_providerconfig.aws.enabled .Values.cloud.aws.services.apps.argo_workflows.enabled -}}
+apiVersion: helm.crossplane.io/v1beta1
+kind: Release
+metadata:
+  name: {{ .Values.global.app.name }}-eks-argoworkflow
+  namespace: {{ .Release.Namespace }}
+  labels:
+    appName: {{ .Values.global.app.name }}
+spec:
+  forProvider:
+    chart:
+      name: argo-workflows
+      repository: https://argoproj.github.io/argo-helm
+      version: {{ .Values.cloud.aws.services.apps.argo_workflows.version }}
+    namespace: argo-workflows
+    values:
+      controller:
+        parallelism: {{ .Values.cloud.aws.services.apps.argo_workflows.parallelism }}
+        workflowNamespaces:
+          - default
+          - argo-workflows
+      workflow:
+        serviceAccount:
+          create: true
+      server:
+        baseHref: /
+        extraArgs:
+          - --auth-mode=client
+        ingress:
+          enabled: true
+          annotations:
+            #nginx.ingress.kubernetes.io/rewrite-target: /$2
+            nginx.org/mergeable-ingress-type: "minion"
+          ingressClassName: "nginx"
+          pathType: Prefix
+          clusterWorkflowTemplates:
+            enabled: true
+            enableEditing: true
+          hosts:
+            {{- range .Values.cloud.aws.services.apps.argo_workflows.hosts }}
+            - {{ . }}
+            {{- end }}
+          paths:
+            {{- range .Values.cloud.aws.services.apps.argo_workflows.paths }}
+            - {{ . }}
+            {{- end }}
+  providerConfigRef:
+    name: {{ .Values.global.app.name }}-eks-helm
+{{- end }}

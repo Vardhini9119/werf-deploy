@@ -1,0 +1,41 @@
+{{- if and .Values.crossplane_providerconfig.azure.enabled (not .Values.crossplane_providerconfig.aws.enabled) .Values.cloud.azure.services.vm.enabled -}}
+apiVersion: network.azure.upbound.io/v1beta1
+kind: NetworkInterface
+metadata:
+  name: {{ .Values.global.app.name }}-network-interface
+  namespace: {{ .Release.Namespace }}
+  labels:
+    appName: {{ .Values.global.app.name }}
+spec:
+  forProvider:
+    ipConfiguration:
+      - name: ni-ip-config
+        privateIpAddressAllocation: Dynamic
+        subnetIdRef:
+          name: {{ .Values.global.app.name }}-subnet
+        publicIpAddressIdRef:
+          name: {{ .Values.global.app.name }}-publicip
+    location: {{ .Values.cloud.azure.region }}
+    resourceGroupName: {{ .Values.global.app.name }}-rg
+  providerConfigRef:
+    name: {{ lower .Values.crossplane_providerconfig.azure.clientId }}-azure-creds
+{{- end -}} 
+
+
+---
+# Network Interface Security Group Association
+{{- if and .Values.crossplane_providerconfig.azure.enabled (not .Values.crossplane_providerconfig.aws.enabled) .Values.cloud.azure.services.vm.enabled -}}
+apiVersion: network.azure.upbound.io/v1beta1
+kind: NetworkInterfaceSecurityGroupAssociation
+metadata:
+  name: {{ .Values.global.app.name }}-nic-nsg-attach
+  namespace: {{ .Release.Namespace }}
+spec:
+  forProvider:
+    networkInterfaceIdRef:
+      name: {{ .Values.global.app.name }}-network-interface
+    networkSecurityGroupIdRef:
+      name: {{ .Values.global.app.name }}-nsg
+  providerConfigRef:
+    name: {{ lower .Values.crossplane_providerconfig.azure.clientId }}-azure-creds
+{{- end -}}

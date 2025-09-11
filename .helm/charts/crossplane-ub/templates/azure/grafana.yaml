@@ -1,0 +1,19 @@
+{{- if and .Values.crossplane_providerconfig.azure.enabled .Values.cloud.azure.services.apps.grafana.enabled -}}
+apiVersion: helm.crossplane.io/v1beta1
+kind: Release
+metadata:
+  name: {{ .Values.global.app.name }}-aks-grafana
+  namespace: {{ .Release.Namespace }}
+  labels:
+    appName: {{ .Values.global.app.name }}
+spec:
+  forProvider:
+    chart:
+      name: grafana
+      repository: "oci://registry-1.docker.io/bitnamicharts"
+      version: {{ .Values.cloud.azure.services.apps.grafana.version }}
+    namespace: monitoring
+    values: {}
+  providerConfigRef:
+    name: {{ .Values.global.app.name }}-helm-aks
+{{- end }}

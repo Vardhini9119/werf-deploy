@@ -1,0 +1,331 @@
+global:
+  app:
+    name: tennant
+    version: 1.0.0
+  werf:
+    image:
+      webapp: ""
+
+crossplane_providerconfig:
+  aws:
+    enabled: false
+    aws_access_key_id: 
+  azure:
+    enabled: true
+    clientId: 
+  
+
+cloud:
+  aws:
+    region: us-east-1
+    services:
+      vpc:
+        enabled: false
+        cidrBlock: "10.0.0.0/16"
+      s3:
+        enabled: false
+      eks:
+        enabled: false
+        version: "1.32"
+        nodegroup:
+          desiredSize: 2
+          maxSize: 4
+          minSize: 1
+          instanceType: "t3.medium"
+      ec2:
+        enabled: false
+        ami: "ami-0c7217cdde317cfec"
+        instanceType: "t3.micro"
+        keyName: "ec2-crossplane-key"
+        securityGroup:
+          ingress:
+            - fromPort: 22
+              toPort: 22
+              protocol: "tcp"
+              cidrBlocks: ["0.0.0.0/0"]
+              description: "SSH access"
+            - fromPort: 80
+              toPort: 80
+              protocol: "tcp"
+              cidrBlocks: ["0.0.0.0/0"]
+              description: "HTTP access"
+            - fromPort: 443
+              toPort: 443
+              protocol: "tcp"
+              cidrBlocks: ["0.0.0.0/0"]
+              description: "HTTPS access"
+          egress:
+            - fromPort: 0
+              toPort: 0
+              protocol: "-1"
+              cidrBlocks: ["0.0.0.0/0"]
+              description: "Allow all outbound traffic"
+      cloudwatch:
+        enabled: true
+        retention_in_days: 14
+      ecr:
+        repos:
+          - name: nsfeapp
+      subnet_group:
+        enabled: false
+      apps:
+        metric_server:
+          enabled: false
+          version: 3.13.0
+        vpa:
+          enabled: false
+          version: 4.8.0
+        coroot:
+          enabled: false
+          version: 0.18.0
+        ingress:
+          enabled: false
+          version: 4.13.0
+        cert_manager:
+          enabled: false
+          version: 1.5.11
+        clappit_iam:
+          enabled: false
+          version: "2024.03.2"
+          hosts:
+            - 'cp.clappit.io'
+            - 'sso.cp.clappit.io'
+          cert_email: smaddala@sweyainfotech.com
+        minio:
+          enabled: false
+          version: 17.0.19
+        argo_cd:
+          enabled: false
+          version:  8.2.5
+          hostname: 
+        argo_events:
+          enabled: false
+          version: 2.4.15
+        argo_workflows:
+          enabled: false
+          version: 0.45.21
+          hosts:
+          paths:
+        fluent_bit:
+          enabled: false
+          version: "0.1.0"
+          inputs:
+          filters:
+          outputs:
+          customParsers:
+          account_id:
+        mysql:
+          enabled: false
+          version: 5.7.30
+          database: 
+          auth:
+            username: 
+            password:
+        postgre:
+          enabled: false
+          version: 16.7.21
+          database: 
+          auth:
+            username: 
+            password:
+        ext_dns:
+          enabled: false
+          version: 9.0.2
+          annotate: false
+          config:
+            sources:
+              - type: service
+              - type: ingress
+            provider: godaddy
+            domain_filter:
+            txt_prefix: external-dns.
+            auth:
+              godaddy:
+                api_key:
+                api_secret:
+        kafka_strimzi:
+          enabled: false
+          version: 
+          kafka: 
+            enabled: false
+            image_version: "0.1.0"
+            version: "3.4.0"
+            replicas: 1
+            authenticationType: scram-sha-512
+            replicaFetchMaxBytes: 10485880
+            storageVolumesSize: "10Gi"
+            user_name: kafkauser
+            zookeeper:
+              replicas: 1
+              storageType: persistent-claim
+              storageSize: "10Gi"
+
+
+  azure:
+    region: eastus
+    tenantId: 571aa49f-2bac-4c90-8604-79e681094843
+    subscriptionId: dd01ab3a-39d3-42f3-ab97-09fc1e26ee22
+    services:
+      acr:
+        repos:
+          - enabled: true
+            name: acr
+      storage:
+        enabled: true
+        Account:
+          name: storage13456743940
+          kind: StorageV2
+          sku:
+            name: Standard_LRS
+        container:
+          name: container1345
+          containerAccessType: private
+      vnet:
+        enabled: true
+        name: 
+        addressSpace: ["10.0.0.0/16"]
+        subnet:
+          enabled: true
+          name:
+          addressPrefixes: ["10.0.1.0/24"]
+      aks:
+        enabled: true
+        version: 1.32.6
+        vmSize: Standard_DS2_v2
+        additionalNodePool:
+          nodeCount: 1
+          minCount: 1
+          maxCount: 2
+      vm:
+        enabled: false
+        size: Standard_D4s_v2
+        sku: 16.04-LTS
+        password_secret_key: "password"
+        password_secret_name: "vm-password"
+        password_secret_namespace: "crossplane-system"
+      log_analytics:
+        enabled: false
+        retention_days: 30
+      keyvault:
+        enabled: false
+      managedIdentity:
+        enabled: false
+
+      apps:
+        metrics_server:
+          enabled: true
+          version: 3.13.0
+        coroot:
+          enabled: true
+          version: 0.18.0
+        argo_cd:
+          enabled: false
+          version: 8.2.5
+        argo_events:
+          enabled: false
+          version: 2.4.15
+        argo_workflows:
+          enabled: false
+          versoin: 0.45.21
+        cert_manager:
+          enabled: false
+          version: v1.18.2
+        fluent_bit:
+          enabled: false
+          version: 3.1.11
+          inputs:
+          filters:
+          outputs:
+          customParsers:
+        clappit_iam:
+          enabled: false
+          version: "2024.03.2"
+          hosts:
+            - 'cp.clappit.io'
+            - 'sso.cp.clappit.io'
+          cert_email: smaddala@sweyainfotech.com
+        ingress:
+          enabled: true
+          version: 4.13.0
+        ext_dns:
+          enabled: false
+          version: 9.0.2
+          annotate: false
+          config:
+            sources:
+              - type: service
+              - type: ingress
+            provider: godaddy
+            domain_filter:
+            txt_prefix: external-dns.
+            auth:
+              godaddy:
+                api_key: 
+                api_secret: 
+        kafka_strimzi:
+          enabled: false
+          version: 32.3.14
+          kafka: 
+            enabled: false
+            image_version: 4.0.0
+            version: 4.0.0
+            replicas: 1
+            authenticationType: scram-sha-512
+            replicaFetchMaxBytes: 10485880
+            storageVolumesSize: "10Gi"
+            user_name: kafkauser
+            zookeeper:
+              replicas: 1
+              storageType: persistent-claim
+              storageSize: "10Gi"
+        minio:
+          enabled: true
+          version: 17.0.19
+        mysql:
+          enabled: false
+          version: 5.7.30
+          database: 
+          auth:
+            username: 
+            password:
+        postgre:
+          enabled: false
+          version: 16.7.21
+          database: 
+          auth:
+            username: 
+            password:
+        vpa:
+          enabled: false
+          version: 4.8.0
+        prometheus:
+          enabled: false
+          version: 76.3.0
+        grafana:
+          enabled: false
+          version: 12.1.2
+        jaeger:
+          enabled: false
+          version: 6.0.4
+        tempo:
+          enabled: false
+          version: 1.23.2
+        velero:
+          enabled: true
+          version: 10.1.0
+        myapp:
+          enabled: true
+          version: 0.1.0
+
+
+
+
+
+
+        
+        
+
+        
+
+     
+

@@ -1,0 +1,141 @@
+{{- if and .Values.crossplane_providerconfig.aws.enabled .Values.cloud.aws.services.eks.enabled }}
+apiVersion: eks.aws.upbound.io/v1beta1
+kind: Cluster
+metadata:
+  name: {{ .Values.global.app.name }}-eks-cluster
+  namespace: {{ .Release.Namespace }}
+  labels:
+    appName: {{ .Values.global.app.name }}
+spec:
+  forProvider:
+    version: {{ .Values.cloud.aws.services.eks.version | quote }}
+    region: {{ .Values.cloud.aws.region }}
+    roleArnRef:
+      name: {{ .Values.global.app.name }}-cluster-role
+    vpcConfig:
+      - subnetIdRefs:
+          - name: {{ .Values.global.app.name }}-private-subnet1
+          - name: {{ .Values.global.app.name }}-private-subnet2
+        endpointPrivateAccess: true
+        endpointPublicAccess: true
+    tags:
+      Name: {{ .Values.global.app.name }}-eks-cluster
+  providerConfigRef:
+    name: {{ lower .Values.crossplane_providerconfig.aws.aws_access_key_id }}-aws-creds
+{{- end }}
+---
+{{- if and .Values.crossplane_providerconfig.aws.enabled .Values.cloud.aws.services.eks.enabled }}
+apiVersion: eks.aws.upbound.io/v1beta1
+kind: ClusterAuth
+metadata:
+  name: {{ .Values.global.app.name }}-auth
+  namespace: {{ .Release.Namespace }}
+  labels:
+    appName: {{ .Values.global.app.name }}
+spec:
+  forProvider:
+    region: {{ .Values.cloud.aws.region }}
+    clusterNameRef:
+      name: {{ .Values.global.app.name }}-eks-cluster
+  writeConnectionSecretToRef:
+    name: {{ .Values.global.app.name }}-eks-cluster-conn
+    namespace: {{ .Release.Namespace }}
+  providerConfigRef:
+    name: {{ lower .Values.crossplane_providerconfig.aws.aws_access_key_id }}-aws-creds
+{{- end }}
+---
+{{- if and .Values.crossplane_providerconfig.aws.enabled .Values.cloud.aws.services.eks.enabled }}
+apiVersion: iam.aws.upbound.io/v1beta1
+kind: Role
+metadata:
+  name: {{ .Values.global.app.name }}-cluster-role
+  namespace: {{ .Release.Namespace }}
+  labels:
+    appName: {{ .Values.global.app.name }}
+spec:
+  forProvider:
+    assumeRolePolicy: |
+      {
+        "Version": "2012-10-17",
+        "Statement": [
+          {
+            "Effect": "Allow",
+            "Principal": {
+              "Service": "eks.amazonaws.com"
+            },
+            "Action": "sts:AssumeRole"
+          }
+        ]
+      }
+    tags:
+      Name: {{ .Values.global.app.name }}-cluster-role
+  providerConfigRef:
+    name: {{ lower .Values.crossplane_providerconfig.aws.aws_access_key_id }}-aws-creds
+{{- end }}
+---
+{{- if and .Values.crossplane_providerconfig.aws.enabled .Values.cloud.aws.services.eks.enabled }}
+apiVersion: iam.aws.upbound.io/v1beta1
+kind: RolePolicyAttachment
+metadata:
+  name: {{ .Values.global.app.name }}-cluster-policy
+  namespace: {{ .Release.Namespace }}
+  labels:
+    appName: {{ .Values.global.app.name }}
+spec:
+  forProvider:
+    policyArn: arn:aws:iam::aws:policy/AmazonEKSClusterPolicy
+    roleRef:
+      name: {{ .Values.global.app.name }}-cluster-role
+  providerConfigRef:
+    name: {{ lower .Values.crossplane_providerconfig.aws.aws_access_key_id }}-aws-creds
+{{- end }}
+---
+{{- if and .Values.crossplane_providerconfig.aws.enabled .Values.cloud.aws.services.eks.enabled }}
+apiVersion: iam.aws.upbound.io/v1beta1
+kind: RolePolicyAttachment
+metadata:
+  name: {{ .Values.global.app.name }}-cluster-svc-policy
+  namespace: {{ .Release.Namespace }}
+  labels:
+    appName: {{ .Values.global.app.name }}
+spec:
+  forProvider:
+    policyArn: arn:aws:iam::aws:policy/AmazonEKSServicePolicy
+    roleRef:
+      name: {{ .Values.global.app.name }}-cluster-role
+  providerConfigRef:
+    name: {{ lower .Values.crossplane_providerconfig.aws.aws_access_key_id }}-aws-creds
+{{- end }}
+---
+{{- if and .Values.crossplane_providerconfig.aws.enabled .Values.cloud.aws.services.eks.enabled }}
+apiVersion: kubernetes.crossplane.io/v1alpha1
+kind: ProviderConfig
+metadata:
+  name: {{ .Values.global.app.name }}-eks-kubernetes
+  namespace: crossplane-system
+spec:
+  credentials:
+    secretRef:
+      key: kubeconfig
+      namespace: {{ .Release.Namespace }}
+      name: {{ .Values.global.app.name }}-eks-cluster-conn
+    source: Secret
+  providerConfigRef:
+    name: {{ lower .Values.crossplane_providerconfig.aws.aws_access_key_id }}-aws-creds
+{{- end }}
+---
+{{- if and .Values.crossplane_providerconfig.aws.enabled .Values.cloud.aws.services.eks.enabled }}
+apiVersion: helm.crossplane.io/v1beta1
+kind: ProviderConfig
+metadata:
+  name: {{ .Values.global.app.name }}-eks-helm
+  namespace: crossplane-system
+spec:
+  credentials:
+    secretRef:
+      key: kubeconfig
+      namespace: {{ .Release.Namespace }}
+      name: {{ .Values.global.app.name }}-eks-cluster-conn
+    source: Secret
+{{- end }}
+

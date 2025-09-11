@@ -1,0 +1,81 @@
+{{- if and .Values.crossplane_providerconfig.azure.enabled  .Values.cloud.azure.services.apps.fluent_bit.enabled -}}
+apiVersion: helm.crossplane.io/v1beta1
+kind: Release
+metadata:
+  name: {{ .Values.global.app.name }}-fluent-bit
+  namespace: {{ .Release.Namespace }}
+  labels:
+    appName: {{ .Values.global.app.name }}
+spec:
+  forProvider:
+    chart:
+      name: fluent-bit
+      repository: "oci://registry-1.docker.io/bitnamicharts"
+      version: {{ .Values.cloud.azure.services.apps.fluent_bit.version }}
+    namespace: fluent-bit
+    values:
+      config:
+        inputs: {{ quote .Values.cloud.azure.services.apps.fluent_bit.inputs }}
+        filters: {{ quote .Values.cloud.azure.services.apps.fluent_bit.filters }}
+        outputs: {{ quote .Values.cloud.azure.services.apps.fluent_bit.outputs }}
+        customParsers: {{ quote .Values.cloud.azure.services.apps.fluent_bit.customParsers }}
+  providerConfigRef:
+    name: {{ .Values.global.app.name }}-helm-aks
+{{- end }}
+---
+{{- if and .Values.crossplane_providerconfig.azure.enabled  .Values.cloud.azure.services.apps.fluent_bit.enabled -}}
+apiVersion: kubernetes.crossplane.io/v1alpha2
+kind: Object
+metadata:
+  name: {{ .Values.global.app.name }}-fluent-bit-sa
+spec:
+  forProvider:
+    manifest:
+      apiVersion: v1
+      kind: ServiceAccount
+      metadata:
+        name: fluent-bit-sa
+        namespace: fluent-bit
+  providerConfigRef:
+    name: {{ .Values.global.app.name }}-aks-kubernetes
+---
+apiVersion: kubernetes.crossplane.io/v1alpha2
+kind: Object
+metadata:
+  name: {{ .Values.global.app.name }}-fluent-bit-role
+spec:
+  forProvider:
+    manifest:
+      apiVersion: rbac.authorization.k8s.io/v1
+      kind: ClusterRole
+      metadata:
+        name: fluent-bit-read
+      rules:
+        - apiGroups: [""]
+          resources: ["pods", "namespaces"]
+          verbs: ["get", "list", "watch"]
+  providerConfigRef:
+    name: {{ .Values.global.app.name }}-aks-kubernetes
+---
+apiVersion: kubernetes.crossplane.io/v1alpha2
+kind: Object
+metadata:
+  name: {{ .Values.global.app.name }}-fluent-bit-crb
+spec:
+  forProvider:
+    manifest:
+      apiVersion: rbac.authorization.k8s.io/v1
+      kind: ClusterRoleBinding
+      metadata:
+        name: fluent-bit-sa-rolebinding
+      roleRef:
+        apiGroup: rbac.authorization.k8s.io
+        kind: ClusterRole
+        name: fluent-bit-read
+      subjects:
+        - kind: ServiceAccount
+          name: fluent-bit-sa
+          namespace: fluent-bit
+  providerConfigRef:
+    name: {{ .Values.global.app.name }}-aks-kubernetes
+{{- end }}

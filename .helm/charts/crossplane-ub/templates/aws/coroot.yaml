@@ -1,0 +1,44 @@
+{{- if and .Values.crossplane_providerconfig.aws.enabled .Values.cloud.aws.services.apps.coroot.enabled -}}
+apiVersion: helm.crossplane.io/v1beta1
+kind: Release
+metadata:
+  name: {{ .Values.global.app.name }}-eks-coroot
+  namespace: {{ .Release.Namespace }}
+  labels:
+    appName: {{ .Values.global.app.name }}
+spec:
+  forProvider:
+    chart:
+      name: coroot
+      repository: https://coroot.github.io/helm-charts
+      version: {{ .Values.cloud.aws.services.apps.coroot.version }}
+    namespace: coroot
+    values:
+      node-agent:
+        profiling:
+          profilesEndpoint: ""
+      opentelemetry-collector:
+        enabled: false
+      clickhouse:
+        enabled: false
+      corootCE:
+        bootstrap:
+          otel:
+            traces:
+              enabled: false
+      node-agent:
+        otel:
+          tracesEndpoint: ""
+      corootCE:
+        bootstrap:
+          otel:
+            logs:
+              enabled: false
+      corootClusterAgent:
+        enabled: false
+      node-agent:
+        otel:
+          logsEndpoint: ""
+  providerConfigRef:
+    name: {{ .Values.global.app.name }}-eks-helm
+{{- end }}

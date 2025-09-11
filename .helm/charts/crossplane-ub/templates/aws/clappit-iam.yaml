@@ -1,0 +1,28 @@
+{{- if and .Values.crossplane_providerconfig.aws.enabled .Values.cloud.aws.services.apps.clappit_iam.enabled -}}
+apiVersion: helm.crossplane.io/v1beta1
+kind: Release
+metadata:
+  name: {{ .Values.global.app.name }}-eks-clappit-iam
+  namespace: {{ .Release.Namespace }}
+  labels:
+    appName: {{ .Values.global.app.name }}
+spec:
+  forProvider:
+    chart:
+      name: clappit-iam
+      repository: "oci://registry-1.docker.io/clappit"
+      version: {{ .Values.cloud.aws.services.apps.clappit_iam.version }}
+    namespace: default
+    values:
+      ingress:
+        allhosts:
+          {{- range .Values.cloud.aws.services.apps.clappit_iam.hosts }}
+          - {{ . }}
+          {{- end }}
+        tls:
+          secretName: {{ .Values.global.app.name }}-tls-cert
+        cert:
+          letsencrypt_email: {{ .Values.cloud.aws.services.apps.clappit_iam.cert_email }}
+  providerConfigRef:
+    name: {{ .Values.global.app.name }}-eks-helm
+{{- end }}

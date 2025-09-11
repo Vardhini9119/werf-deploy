@@ -1,0 +1,19 @@
+{{- if .Values.crossplane_providerconfig.aws.enabled }}
+{{- if .Values.cloud.aws.services.s3.enabled }}
+# S3 Bucket
+apiVersion: s3.aws.upbound.io/v1beta1
+kind: Bucket
+metadata:
+  name: {{ .Values.global.app.name }}-s3bucket-2025
+  namespace: {{ .Release.Namespace }}
+  labels:
+    appName: {{ .Values.global.app.name }}
+spec:
+  forProvider:
+    region: {{ .Values.cloud.aws.region }}
+    tags:
+      Name: {{ .Values.global.app.name }}-s3
+  providerConfigRef:
+    name: {{ lower $.Values.crossplane_providerconfig.aws.aws_access_key_id }}-aws-creds
+{{- end }}
+{{- end }}

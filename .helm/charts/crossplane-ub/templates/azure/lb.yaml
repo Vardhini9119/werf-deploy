@@ -1,0 +1,27 @@
+{{- if and .Values.crossplane_providerconfig.azure.enabled .Values.cloud.azure.services.apps.ingress.enabled -}}
+apiVersion: helm.crossplane.io/v1beta1
+kind: Release
+metadata:
+  name: {{ .Values.global.app.name }}-aks-ingress-nginx
+  namespace: {{ .Release.Namespace }}
+  labels:
+    appName: {{ .Values.global.app.name }}
+spec:
+  forProvider:
+    chart:
+      name: ingress-nginx
+      repository: https://kubernetes.github.io/ingress-nginx
+      version: {{ .Values.cloud.azure.services.apps.ingress.version }}
+    namespace: ingress-nginx
+    values:
+      controller:
+        allowSnippetAnnotations: true
+        service:
+          annotations:
+            service.beta.kubernetes.io/azure-load-balancer-health-probe-request-path: /healthz
+            {{- if and .Values.cloud.azure.services.apps.ext_dns.annotate .Values.cloud.azure.services.apps.clappit_iam.hosts }} 
+            external-dns.alpha.kubernetes.io/hostname: {{ join "," .Values.cloud.azure.services.apps.clappit_iam.hosts  | quote }}
+            {{- end }}
+  providerConfigRef:
+    name: {{ .Values.global.app.name }}-helm-aks
+{{- end }}

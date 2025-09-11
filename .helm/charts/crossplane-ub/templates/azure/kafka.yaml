@@ -1,0 +1,50 @@
+{{- if and .Values.crossplane_providerconfig.azure.enabled .Values.cloud.azure.services.apps.kafka_strimzi.enabled -}}
+{{- if .Values.cloud.azure.services.apps.kafka_strimzi.kafka.enabled -}}
+apiVersion: helm.crossplane.io/v1beta1
+kind: Release
+metadata:
+  name: {{ .Values.global.app.name }}-aks-kafka
+  namespace: {{ .Release.Namespace }}
+  labels:
+    appName: {{ .Values.global.app.name }}
+spec:
+  forProvider:
+    chart:
+      name: clappit-kafka
+      repository: "oci://registry-1.docker.io/bitnamicharts"
+      version: {{ .Values.cloud.azure.services.apps.kafka_strimzi.kafka.image_version }}
+    namespace: strimzi
+    values:
+      kafka:
+        name: {{ .Values.global.app.name }}-eks-kafka
+        version: {{ .Values.cloud.azure.services.apps.kafka_strimzi.kafka.version }}
+        replicas: {{ .Values.cloud.azure.services.apps.kafka_strimzi.kafka.replicas }}
+        authenticationType: {{ .Values.cloud.azure.services.apps.kafka_strimzi.kafka.authenticationType }}
+        replicaFetchMaxBytes: {{ .Values.cloud.azure.services.apps.kafka_strimzi.kafka.replicaFetchMaxBytes }}
+        storageVolumesSize: {{ .Values.cloud.azure.services.apps.kafka_strimzi.kafka.storageVolumesSize }}
+        user:
+          name: {{ .Values.cloud.azure.services.apps.kafka_strimzi.kafka.user_name }}
+      zookeeper:
+        replicas: {{ .Values.cloud.azure.services.apps.kafka_strimzi.kafka.zookeeper.replicas }}
+        storageType: persistent-claim
+        storageSize: {{ .Values.cloud.azure.services.apps.kafka_strimzi.kafka.zookeeper.storageSize }}
+  providerConfigRef:
+    name: {{ .Values.global.app.name }}-helm-aks
+{{- end }}
+---
+apiVersion: helm.crossplane.io/v1beta1
+kind: Release
+metadata:
+  name: {{ .Values.global.app.name }}-aks-kafkaop
+  namespace: {{ .Release.Namespace }}
+  labels:
+    appName: {{ .Values.global.app.name }}
+spec:
+  forProvider:
+    chart:
+      name: strimzi-kafka-operator
+      repository: "https://strimzi.io/charts"
+    namespace: strimzi
+  providerConfigRef:
+    name: {{ .Values.global.app.name }}-helm-aks
+{{- end }}

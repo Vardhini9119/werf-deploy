@@ -1,0 +1,21 @@
+{{- if .Values.crossplane_providerconfig.aws.enabled -}}
+{{- range $v := .Values.cloud.aws.services.ecr.repos }}
+---
+apiVersion: ecr.aws.upbound.io/v1beta1
+kind: Repository
+metadata:
+  name: {{ $v.name }}
+  namespace: {{ $.Release.Namespace }}
+spec:
+  forProvider:
+    imageTagMutability: IMMUTABLE
+    region: {{ $.Values.cloud.aws.region }}
+    tags:
+      Name: {{ $v.name }}
+  writeConnectionSecretToRef:
+    name: {{ $v.name }}-ecr-conn
+    namespace: {{ $.Release.Namespace }}
+  providerConfigRef:
+    name: {{ lower $.Values.crossplane_providerconfig.aws.aws_access_key_id }}-aws-creds
+{{- end }}
+{{- end }}

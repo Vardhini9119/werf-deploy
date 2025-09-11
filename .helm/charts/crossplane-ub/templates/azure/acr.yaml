@@ -1,0 +1,24 @@
+{{- if .Values.crossplane_providerconfig.azure.enabled -}}
+{{- range $v := .Values.cloud.azure.services.acr.repos }}
+---
+{{- if $v.enabled }}
+apiVersion: containerregistry.azure.upbound.io/v1beta1
+kind: Registry
+metadata:
+  name: {{ $v.name }}-acr12345
+  namespace: {{ $.Release.Namespace }}
+spec:
+  forProvider:
+    adminEnabled: true
+    location: {{ $.Values.cloud.azure.region }}
+    resourceGroupNameRef:
+      name: {{ $.Values.global.app.name }}-rg
+    sku: Premium
+  writeConnectionSecretToRef:
+    name: {{ $v.name }}-acr-conf
+    namespace: {{ $.Release.Namespace }}
+  providerConfigRef:
+    name: {{ lower $.Values.crossplane_providerconfig.azure.clientId }}-azure-creds
+{{- end }}
+{{- end }}
+{{- end }}

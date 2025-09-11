@@ -1,0 +1,66 @@
+apiVersion: kubernetes.crossplane.io/v1alpha2
+kind: Object
+metadata:
+  name: myapp-ns
+spec:
+  forProvider:
+    manifest:
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: myapp-ns
+  providerConfigRef:
+    name: {{ .Values.global.app.name }}-aks-kubernetes
+---
+apiVersion: kubernetes.crossplane.io/v1alpha2
+kind: Object
+metadata:
+  name: myapp-deployment
+spec:
+  forProvider:
+    manifest:
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: myapp
+        namespace: myapp-ns
+      spec:
+        replicas: 2
+        selector:
+          matchLabels:
+            app: myapp
+        template:
+          metadata:
+            labels:
+              app: myapp
+          spec:
+            containers:
+              - name: myapp
+                image: {{ .Values.global.werf.image.webapp }}
+                imagePullPolicy: IfNotPresent
+                ports:
+                  - containerPort: 8080
+  providerConfigRef:
+    name: {{ .Values.global.app.name }}-aks-kubernetes
+---
+apiVersion: kubernetes.crossplane.io/v1alpha2
+kind: Object
+metadata:
+  name: myapp-service
+spec:
+  forProvider:
+    manifest:
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: myapp
+        namespace: myapp-ns
+      spec:
+        type: ClusterIP
+        selector:
+          app: myapp
+        ports:
+          - port: 80
+            targetPort: 8080
+  providerConfigRef:
+    name: {{ .Values.global.app.name }}-aks-kubernetes

@@ -1,0 +1,19 @@
+{{- if and .Values.crossplane_providerconfig.azure.enabled .Values.cloud.azure.services.apps.prometheus.enabled -}}
+apiVersion: helm.crossplane.io/v1beta1
+kind: Release
+metadata:
+  name: {{ .Values.global.app.name }}-aks-prometheus
+  namespace: {{ .Release.Namespace }}
+  labels:
+    appName: {{ .Values.global.app.name }}
+spec:
+  forProvider:
+    chart:
+      name: kube-prometheus-stack
+      repository: "https://prometheus-community.github.io/helm-charts"
+      version: {{ .Values.cloud.azure.services.apps.prometheus.version}}
+    namespace: monitoring
+    values: {}
+  providerConfigRef:
+    name: {{ .Values.global.app.name }}-helm-aks
+{{- end }}

@@ -1,0 +1,14 @@
+{{- if .Values.crossplane_providerconfig.aws.enabled -}}
+apiVersion: aws.upbound.io/v1beta1
+kind: ProviderConfig
+metadata:
+  name: {{ lower .Values.crossplane_providerconfig.aws.aws_access_key_id }}-aws-creds
+  namespace: {{ .Release.Namespace }}
+spec:
+  credentials:
+    source: Secret
+    secretRef:
+      namespace: {{ .Release.Namespace }}
+      name: {{ lower .Values.crossplane_providerconfig.aws.aws_access_key_id }}-aws-secret
+      key: creds
+{{- end }}

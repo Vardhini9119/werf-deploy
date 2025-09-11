@@ -1,0 +1,96 @@
+{{- if and .Values.crossplane_providerconfig.aws.enabled .Values.cloud.aws.services.eks.enabled -}}
+# EKS Node Role
+apiVersion: iam.aws.upbound.io/v1beta1
+kind: Role
+metadata:
+  name: {{ .Values.global.app.name }}-eks-nodes
+  annotations:
+    crossplane.io/external-name: {{ .Values.global.app.name }}-eks-nodes
+spec:
+  forProvider:
+    assumeRolePolicy: |
+      {
+        "Version": "2012-10-17",
+        "Statement": [
+          {
+            "Effect": "Allow",
+            "Action": "sts:AssumeRole",
+            "Principal": {
+              "Service": "ec2.amazonaws.com"
+            }
+          }
+        ]
+      }
+  providerConfigRef:
+    name: {{ lower .Values.crossplane_providerconfig.aws.aws_access_key_id }}-aws-creds
+---
+# EKS Node Worker Policy Attachment
+apiVersion: iam.aws.upbound.io/v1beta1
+kind: RolePolicyAttachment
+metadata:
+  name: {{ .Values.global.app.name }}-eks-nodes-amazon-eks-worker-node-policy
+  annotations:
+    crossplane.io/external-name: {{ .Values.global.app.name }}-eks-nodes-amazon-eks-worker-node-policy
+spec:
+  forProvider:
+    role: {{ .Values.global.app.name }}-eks-nodes
+    policyArn: arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy
+  providerConfigRef:
+    name: {{ lower .Values.crossplane_providerconfig.aws.aws_access_key_id }}-aws-creds
+---
+# EKS CNI Policy Attachment
+apiVersion: iam.aws.upbound.io/v1beta1
+kind: RolePolicyAttachment
+metadata:
+  name: {{ .Values.global.app.name }}-eks-nodes-amazon-eks-cni-policy
+  annotations:
+    crossplane.io/external-name: {{ .Values.global.app.name }}-eks-nodes-amazon-eks-cni-policy
+spec:
+  forProvider:
+    role: {{ .Values.global.app.name }}-eks-nodes
+    policyArn: arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy
+  providerConfigRef:
+    name: {{ lower .Values.crossplane_providerconfig.aws.aws_access_key_id }}-aws-creds
+---
+# ECR Read Only Policy Attachment
+apiVersion: iam.aws.upbound.io/v1beta1
+kind: RolePolicyAttachment
+metadata:
+  name: {{ .Values.global.app.name }}-eks-nodes-amazon-ec2-container-registry-read-only
+  annotations:
+    crossplane.io/external-name: {{ .Values.global.app.name }}-eks-nodes-amazon-ec2-container-registry-read-only
+spec:
+  forProvider:
+    role: {{ .Values.global.app.name }}-eks-nodes
+    policyArn: arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly
+  providerConfigRef:
+    name: {{ lower .Values.crossplane_providerconfig.aws.aws_access_key_id }}-aws-creds
+---
+# General Node Group
+apiVersion: eks.aws.upbound.io/v1beta1
+kind: NodeGroup
+metadata:
+  name: {{ .Values.global.app.name }}-eks-nodes
+  annotations:
+    crossplane.io/external-name: {{ .Values.global.app.name }}-eks-nodes
+spec:
+  forProvider:
+    clusterNameRef:
+      name: {{ .Values.global.app.name }}-eks-cluster
+    nodeRoleArnRef:
+      name: {{ .Values.global.app.name }}-eks-nodes
+    region: {{ .Values.cloud.aws.region }}
+    capacityType: ON_DEMAND
+    instanceTypes: [{{ .Values.cloud.aws.services.eks.nodegroup.instanceType | quote }}]
+    scalingConfig:
+      - desiredSize: {{ .Values.cloud.aws.services.eks.nodegroup.desiredSize }}
+        minSize: {{ .Values.cloud.aws.services.eks.nodegroup.minSize }}
+        maxSize: {{ .Values.cloud.aws.services.eks.nodegroup.maxSize }}
+    subnetIdRefs:
+      - name: {{ .Values.global.app.name }}-private-subnet1
+      - name: {{ .Values.global.app.name }}-private-subnet2
+  providerConfigRef:
+    name: {{ lower .Values.crossplane_providerconfig.aws.aws_access_key_id }}-aws-creds
+{{- end }}
+---
+# Spot Node Group

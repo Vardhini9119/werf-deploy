@@ -1,0 +1,64 @@
+{{- if .Values.crossplane_providerconfig.azure.enabled }}
+{{- if .Values.cloud.azure.services.aks.enabled }}
+# Kubernetes Cluster
+apiVersion: containerservice.azure.upbound.io/v1beta2
+kind: KubernetesCluster
+metadata:
+  name: {{ .Values.global.app.name }}-aks-cluster
+  namespace: {{ .Release.Namespace }}
+spec:
+  forProvider:
+    location: {{ .Values.cloud.azure.region }}
+    resourceGroupName: {{ .Values.global.app.name }}-rg
+    dnsPrefix: {{ .Values.global.app.name }}-aksprefix
+    kubernetesVersion: {{ .Values.cloud.azure.services.aks.version }}
+    identity:
+      type: "SystemAssigned"
+    defaultNodePool:
+      name: default
+      nodeCount: 1 
+      vmSize: {{ .Values.cloud.azure.services.aks.vmSize }}
+      vnetSubnetIdRef:
+        name: {{ .Values.global.app.name }}-subnet
+      type: VirtualMachineScaleSets
+    networkProfile:
+      networkPlugin: azure
+      serviceCidr: "10.1.0.0/16"
+      dnsServiceIp: "10.1.0.10"
+  writeConnectionSecretToRef: 
+    namespace: {{ .Release.Namespace }}
+    name: {{ .Values.global.app.name }}-aks-cluster-conf
+  providerConfigRef:
+    name: {{ lower $.Values.crossplane_providerconfig.azure.clientId }}-azure-creds
+{{- end }}
+{{- end }} 
+---
+{{- if and .Values.crossplane_providerconfig.azure.enabled .Values.cloud.azure.services.aks.enabled }}
+apiVersion: helm.crossplane.io/v1beta1
+kind: ProviderConfig
+metadata:
+  name: {{ .Values.global.app.name }}-helm-aks
+  namespace: crossplane-system
+spec:
+  credentials:
+    secretRef:
+      key: kubeconfig
+      namespace: {{ .Release.Namespace }}
+      name: {{ .Values.global.app.name }}-aks-cluster-conf
+    source: Secret
+{{- end }}
+---
+{{- if and .Values.crossplane_providerconfig.azure.enabled .Values.cloud.azure.services.aks.enabled }}
+apiVersion: kubernetes.crossplane.io/v1alpha1
+kind: ProviderConfig
+metadata:
+  name: {{ .Values.global.app.name }}-aks-kubernetes
+  namespace: crossplane-system
+spec:
+  credentials:
+    secretRef:
+      key: kubeconfig
+      namespace: {{ .Release.Namespace }}
+      name: {{ .Values.global.app.name }}-aks-cluster-conf
+    source: Secret
+{{- end }}
