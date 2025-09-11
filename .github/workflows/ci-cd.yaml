@@ -1,1 +1,48 @@
+name: Werf CI/CD
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Log in to Azure
+        run: |
+          az login --service-principal \
+            -u ${{ secrets.AZURE_CLIENT_ID }} \
+            -p ${{ secrets.AZURE_CLIENT_SECRET }} \
+            --tenant ${{ secrets.AZURE_TENANT_ID }}
+          az account set --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Set up AKS kubeconfig
+        run: |
+          az aks get-credentials \
+            --resource-group hp \
+            --name cluster-test \
+            --overwrite-existing
+
+      - name: Set up werf
+        uses: werf/actions/install@v1.2
+
+      #- name: Docker login
+      # run: |
+      #docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+      
+      - name: Azure Container Registry Login
+        run: az acr login --name applicationwerf
+
+      - name: Werf converge (build and deploy)
+        run: |
+          werf converge \
+           --repo applicationwerf.azurecr.io/webapp \
+           --set crossplane_providerconfig.azure.clientId=${{ secrets.AZURE_CLIENT_ID }} \
+           --set crossplane_providerconfig.azure.clientSecret=${{ secrets.AZURE_CLIENT_SECRET }} \
+           --set crossplane_providerconfig.azure.tenantId=${{ secrets.AZURE_TENANT_ID }} \
+           --set crossplane_providerconfig.azure.subscriptionId=${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
