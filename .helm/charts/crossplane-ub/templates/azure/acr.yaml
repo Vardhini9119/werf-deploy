@@ -18,8 +18,9 @@ spec:
     name: {{ $v.name }}-acr-conf
     namespace: {{ $.Release.Namespace }}
   providerConfigRef:
-    name: {{ .Values.crossplane_providerconfig.azure.clientId | toString | lower }}-azure-creds
+    name: {{$.Values.crossplane_providerconfig.azure.clientId | toString | lower }}-azure-creds
 {{- end }}
 {{- end }}
 
 {{- end }}
+
