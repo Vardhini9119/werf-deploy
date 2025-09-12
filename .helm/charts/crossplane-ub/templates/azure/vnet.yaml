@@ -13,7 +13,8 @@ spec:
     location: {{ .Values.cloud.azure.region }}
     resourceGroupName: {{ .Values.global.app.name }}-rg
   providerConfigRef:
-    name: {{ .Values.crossplane_providerconfig.azure.clientId | toString | lower }}-azure-creds
+    name: {{ $.Values.crossplane_providerconfig.azure.clientId | toString | lower }}-azure-creds
 {{- end }}
+
 
 
