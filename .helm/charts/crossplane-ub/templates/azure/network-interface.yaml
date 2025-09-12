@@ -18,7 +18,7 @@ spec:
     location: {{ .Values.cloud.azure.region }}
     resourceGroupName: {{ .Values.global.app.name }}-rg
   providerConfigRef:
-    name: {{ lower .Values.crossplane_providerconfig.azure.clientId }}-azure-creds
+    name: {{ $.Values.crossplane_providerconfig.azure.clientId | toString | lower }}-azure-creds
 {{- end -}} 
 
 
@@ -37,5 +37,6 @@ spec:
     networkSecurityGroupIdRef:
       name: {{ .Values.global.app.name }}-nsg
   providerConfigRef:
-    name: {{ lower .Values.crossplane_providerconfig.azure.clientId }}-azure-creds
+    name: {{ $.Values.crossplane_providerconfig.azure.clientId | toString | lower }}-azure-creds
+
 {{- end -}}
