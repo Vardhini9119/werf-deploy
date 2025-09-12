@@ -6,6 +6,12 @@ global:
     image:
       webapp: ""
 
+crossplane_providerconfig:
+  aws:
+    enabled: false
+  azure:
+    enabled: true
+
 cloud:
   aws:
     region: us-east-1
@@ -319,6 +325,7 @@ cloud:
         
 
      
+
 
 
 
