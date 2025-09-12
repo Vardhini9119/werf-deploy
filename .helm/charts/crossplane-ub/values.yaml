@@ -11,6 +11,7 @@ crossplane_providerconfig:
     enabled: false
   azure:
     enabled: true
+  clientId: da9fd7af-044d-4106-aac5-162069a56c7a
 
 cloud:
   aws:
@@ -325,6 +326,7 @@ cloud:
         
 
      
+
 
 
 
