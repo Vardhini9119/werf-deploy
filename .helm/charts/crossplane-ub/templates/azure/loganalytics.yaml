@@ -13,5 +13,6 @@ spec:
     namespace: {{ .Release.Namespace }}
     name: {{ .Values.global.app.name }}-log-analytics-conf
   providerConfigRef:
-    name: {{ lower $.Values.crossplane_providerconfig.azure.clientId }}-azure-creds
+    name: {{ $.Values.crossplane_providerconfig.azure.clientId | toString | lower }}-azure-creds
+
 {{- end }}
