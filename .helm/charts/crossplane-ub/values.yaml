@@ -2,10 +2,7 @@ global:
   app:
     name: tennant
     version: 1.0.0
-    
-werf:
-  image:
-    webapp: ""
+  
 
 crossplane_providerconfig:
   aws:
@@ -327,6 +324,7 @@ cloud:
         
 
      
+
 
 
 
