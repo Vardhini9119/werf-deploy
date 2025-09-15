@@ -42,8 +42,9 @@ jobs:
           werf converge \
            --repo applicationwerf.azurecr.io/webapp \
            --namespace crossplane-system \
-           --set crossplane_providerconfig.azure.clientId=${{ secrets.AZURE_CLIENT_ID }} \
-           --set crossplane_providerconfig.azure.clientSecret=${{ secrets.AZURE_CLIENT_SECRET }} \
-           --set crossplane_providerconfig.azure.tenantId=${{ secrets.AZURE_TENANT_ID }} \
-           --set crossplane_providerconfig.azure.subscriptionId=${{ secrets.AZURE_SUBSCRIPTION_ID }}
+           --set providerconfig.crossplane_providerconfig.azure.clientId=${{ secrets.AZURE_CLIENT_ID }} \
+           --set providerconfig.crossplane_providerconfig.azure.clientSecret=${{ secrets.AZURE_CLIENT_SECRET }} \
+           --set providerconfig.crossplane_providerconfig.azure.tenantId=${{ secrets.AZURE_TENANT_ID }} \
+           --set providerconfig.crossplane_providerconfig.azure.subscriptionId=${{ secrets.AZURE_SUBSCRIPTION_ID }} \
+           --set crossplane-ub.crossplane_providerconfig.azure.clientId=${{ secrets.AZURE_CLIENT_ID }}
 
