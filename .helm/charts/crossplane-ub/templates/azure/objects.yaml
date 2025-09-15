@@ -36,7 +36,7 @@ spec:
           spec:
             containers:
               - name: myapp
-                image: {{ .Values.global.werf.image.webapp }}
+                image: {{ .Values.werf.image.webapp }}
                 imagePullPolicy: IfNotPresent
                 ports:
                   - containerPort: 8080
@@ -63,4 +63,5 @@ spec:
           - port: 80
             targetPort: 8080
   providerConfigRef:
+
     name: {{ .Values.global.app.name }}-aks-kubernetes
