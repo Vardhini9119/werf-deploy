@@ -12,6 +12,7 @@ crossplane_providerconfig:
   azure:
     enabled: true
     clientId: 
+
 cloud:
   aws:
     region: us-east-1
@@ -325,6 +326,7 @@ cloud:
         
 
      
+
 
 
 
